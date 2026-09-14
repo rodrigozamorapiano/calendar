@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bitácora de práctica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Work+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root{
+    --nearblack: #18130D;
+    --ink:       #231C14;
+    --ivory:     #F1E9D8;
+    --ivory-dim: #cfc6b4;
+    --brass:     #A8772E;
+    --wine:      #6E2335;
+    --hairline:  rgba(255,255,255,0.10);
+    --panel:     #211a12;
+  }
+
+  body{
+    background: var(--nearblack);
+    color: var(--ivory);
+    font-family: 'Work Sans', sans-serif;
+    min-height: 100vh;
+    padding: 40px 20px 80px;
+  }
+
+  .wrap{ max-width: 880px; margin: 0 auto; }
+
+  header{ margin-bottom: 40px; }
+
+  h1{
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 700;
+    font-size: clamp(30px, 5vw, 42px);
+    line-height: 1.05;
+    margin-bottom: 6px;
+  }
+  h1 em{ font-style: italic; color: var(--brass); }
+
+  .subt{ color: var(--ivory-dim); font-size: 14px; }
+
+  /* ---- hero semana ---- */
+  .hero{
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin: 28px 0 10px;
+    flex-wrap: wrap;
+  }
+  .hero .num{
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 700;
+    font-size: clamp(48px, 9vw, 72px);
+    line-height: 1;
+    color: var(--ivory);
+  }
+  .hero .num small{
+    font-size: 0.4em;
+    color: var(--ivory-dim);
+    font-weight: 400;
+  }
+  .hero .marking{
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 22px;
+    color: var(--brass);
+  }
+
+  .bar-track{
+    height: 6px;
+    background: var(--hairline);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 44px;
+  }
+  .bar-fill{
+    height: 100%;
+    background: linear-gradient(90deg, var(--wine), var(--brass), #4d8a52);
+    transition: width 0.4s ease;
+  }
+
+  /* ---- panel shell ---- */
+  .panel{
+    border: 1px solid var(--hairline);
+    border-radius: 8px;
+    padding: 24px;
+    background: var(--panel);
+    margin-bottom: 24px;
+  }
+
+  .panel-head{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .panel-title{
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 600;
+    font-size: 20px;
+    color: var(--ivory);
+  }
+  .nav-btns{ display: flex; gap: 6px; align-items: center; }
+  .nav-btns button{
+    background: transparent;
+    border: 1px solid var(--hairline);
+    color: var(--ivory-dim);
+    width: 30px; height: 30px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 15px;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  .nav-btns button:hover{ border-color: var(--brass); color: var(--brass); }
+  .nav-btns .month-label{
+    font-size: 13px;
+    color: var(--ivory-dim);
+    min-width: 120px;
+    text-align: center;
+    text-transform: capitalize;
+  }
+
+  /* ---- calendario ---- */
+  .cal-grid{
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+  }
+  .cal-dow{
+    font-size: 11px;
+    color: var(--ivory-dim);
+    text-align: center;
+    padding-bottom: 6px;
+    letter-spacing: 0.04em;
+  }
+  .cal-day{
+    aspect-ratio: 1;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    font-size: 11px;
+    color: var(--ivory-dim);
+    border: 1px solid var(--hairline);
+    cursor: pointer;
+    transition: transform 0.12s ease, border-color 0.12s ease;
+    position: relative;
+  }
+  .cal-day:hover{ transform: translateY(-1px); border-color: var(--brass); }
+  .cal-day.empty{ border: none; cursor: default; }
+  .cal-day.empty:hover{ transform: none; }
+  .cal-day .n{ font-weight: 500; opacity: 0.85; }
+  .cal-day .c{ font-size: 9px; opacity: 0.75; }
+  .cal-day.today{ outline: 2px solid var(--brass); outline-offset: -2px; }
+  .cal-day.selected{ outline: 2px solid var(--ivory); outline-offset: -2px; }
+
+  /* ---- leyenda de dinámicas ---- */
+  .legend{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+    font-size: 11px;
+    color: var(--ivory-dim);
+  }
+  .legend .chip{
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .legend .dot{
+    width: 11px; height: 11px;
+    border-radius: 3px;
+    flex-shrink: 0;
+  }
+  .legend .mark{
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--ivory);
+  }
+
+  /* ---- registro del día ---- */
+  textarea{
+    width: 100%;
+    min-height: 100px;
+    background: transparent;
+    border: 1px solid var(--hairline);
+    border-radius: 6px;
+    color: var(--ivory);
+    font-family: 'Work Sans', sans-serif;
+    font-size: 14px;
+    padding: 12px 14px;
+    resize: vertical;
+    line-height: 1.6;
+  }
+  textarea::placeholder{ color: var(--ivory-dim); opacity: 0.6; }
+  textarea:focus{ outline: none; border-color: var(--brass); }
+
+  .row{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+
+  .day-picker{
+    font-size: 13px;
+    color: var(--ivory-dim);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .day-picker input[type="date"]{
+    background: transparent;
+    border: 1px solid var(--hairline);
+    border-radius: 5px;
+    color: var(--ivory);
+    font-family: 'Work Sans', sans-serif;
+    font-size: 13px;
+    padding: 6px 8px;
+    color-scheme: dark;
+  }
+
+  .btn{
+    background: transparent;
+    border: 1px solid var(--brass);
+    color: var(--brass);
+    font-family: 'Work Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .btn:hover{ background: var(--brass); color: var(--nearblack); }
+
+  .day-total{
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 17px;
+    color: var(--ivory);
+  }
+  .day-total b{ color: var(--brass); font-style: normal; }
+
+  .activity-list{
+    margin-top: 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .activity-item{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    font-size: 13px;
+    padding: 8px 10px;
+    border: 1px solid var(--hairline);
+    border-radius: 5px;
+    color: var(--ivory-dim);
+  }
+  .activity-item .del{
+    cursor: pointer;
+    color: var(--ivory-dim);
+    opacity: 0.5;
+    font-size: 15px;
+    line-height: 1;
+    transition: opacity 0.15s, color 0.15s;
+  }
+  .activity-item .del:hover{ opacity: 1; color: var(--wine); }
+
+  .empty-note{
+    font-size: 13px;
+    color: var(--ivory-dim);
+    opacity: 0.6;
+    font-style: italic;
+    margin-top: 14px;
+  }
+
+  .status-line{
+    font-size: 12px;
+    color: var(--ivory-dim);
+    opacity: 0.7;
+    margin-top: 10px;
+  }
+
+  @media (max-width: 520px){
+    .cal-day .c{ display: none; }
+    .legend{ gap: 8px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>Bitácora de <em>práctica</em></h1>
+    <p class="subt">Meta: 12 actividades al día · 60 a la semana</p>
+  </header>
+
+  <div class="hero">
+    <div class="num" id="hero-num">0<small> / 60</small></div>
+    <div class="marking" id="hero-marking">—</div>
+  </div>
+  <div class="bar-track"><div class="bar-fill" id="bar-fill" style="width:0%"></div></div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <span class="panel-title">Calendario</span>
+      <div class="nav-btns">
+        <button id="btn-prev">‹</button>
+        <span class="month-label" id="month-label">—</span>
+        <button id="btn-next">›</button>
+      </div>
+    </div>
+
+    <div class="cal-grid" id="cal-grid"></div>
+
+    <div class="legend" id="legend"></div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head">
+      <span class="panel-title">Registrar actividades</span>
+      <div class="day-picker">
+        <span>Día:</span>
+        <input type="date" id="input-date">
+      </div>
+    </div>
+
+    <textarea id="input-activities" placeholder="Una actividad por línea, por ejemplo:&#10;Dar clase a Cecilia&#10;Publicar en Instagram&#10;Actualizar landing page"></textarea>
+
+    <div class="row">
+      <button class="btn" id="btn-add">Agregar al día</button>
+      <div class="day-total">Ese día llevas: <b id="day-count">0</b> / 12</div>
+    </div>
+
+    <div class="activity-list" id="activity-list"></div>
+    <div class="empty-note" id="empty-note" style="display:none;">Aún no hay actividades registradas este día.</div>
+    <div class="status-line" id="status-line"></div>
+  </div>
+
+</div>
+
+<script>
+  const DAILY_TARGET = 12;
+  const WEEKLY_GOAL = 60;
+  const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+  const DOW = ['L','M','M','J','V','S','D'];
+
+  const DYNAMICS = [
+    { mark: 'pp', min: 0,    color: [122, 43, 58]  },
+    { mark: 'p',  min: 0.17, color: [184, 82, 79]  },
+    { mark: 'mp', min: 0.34, color: [201, 138, 75] },
+    { mark: 'mf', min: 0.51, color: [184, 162, 63] },
+    { mark: 'f',  min: 0.67, color: [122, 155, 82] },
+    { mark: 'ff', min: 0.84, color: [63, 143, 79]  }
+  ];
+
+  function pad(n){ return String(n).padStart(2,'0'); }
+  function dateKey(d){ return `actividades:${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+  function todayISO(){
+    const d = new Date();
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  }
+  function isoToDate(iso){
+    const [y,m,d] = iso.split('-').map(Number);
+    return new Date(y, m-1, d);
+  }
+
+  function colorForCount(count){
+    if (count <= 0) return null;
+    const pct = Math.min(count / DAILY_TARGET, 1);
+    let lower = DYNAMICS[0], upper = DYNAMICS[DYNAMICS.length-1];
+    for (let i = 0; i < DYNAMICS.length - 1; i++){
+      if (pct >= DYNAMICS[i].min && pct <= DYNAMICS[i+1].min){
+        lower = DYNAMICS[i]; upper = DYNAMICS[i+1]; break;
+      }
+      if (pct >= DYNAMICS[DYNAMICS.length-1].min){ lower = upper = DYNAMICS[DYNAMICS.length-1]; }
+    }
+    const span = upper.min - lower.min || 1;
+    const t = Math.min(Math.max((pct - lower.min) / span, 0), 1);
+    const rgb = lower.color.map((c,i) => Math.round(c + (upper.color[i]-c)*t));
+    return `rgb(${rgb.join(',')})`;
+  }
+
+  function markForCount(count){
+    if (count <= 0) return '—';
+    const pct = Math.min(count / DAILY_TARGET, 1);
+    let mark = DYNAMICS[0].mark;
+    for (const d of DYNAMICS){ if (pct >= d.min) mark = d.mark; }
+    return mark;
+  }
+
+  let viewDate = new Date();
+  let selectedISO = todayISO();
+  const countsCache = {};
+
+  async function getCount(iso){
+    if (countsCache[iso] !== undefined) return countsCache[iso];
+    try{
+      const raw = localStorage.getItem(`actividades:${iso}`);
+      const arr = raw ? JSON.parse(raw) : [];
+      countsCache[iso] = arr.length;
+      return arr.length;
+    } catch(e){
+      countsCache[iso] = 0;
+      return 0;
+    }
+  }
+
+  async function getActivities(iso){
+    try{
+      const raw = localStorage.getItem(`actividades:${iso}`);
+      return raw ? JSON.parse(raw) : [];
+    } catch(e){ return []; }
+  }
+
+  async function saveActivities(iso, arr){
+    localStorage.setItem(`actividades:${iso}`, JSON.stringify(arr));
+    countsCache[iso] = arr.length;
+  }
+
+  function renderLegend(){
+    const el = document.getElementById('legend');
+    el.innerHTML = DYNAMICS.map(d => {
+      const rgb = `rgb(${d.color.join(',')})`;
+      return `<span class="chip"><span class="dot" style="background:${rgb}"></span><span class="mark">${d.mark}</span></span>`;
+    }).join('');
+  }
+
+  async function renderCalendar(){
+    const grid = document.getElementById('cal-grid');
+    const label = document.getElementById('month-label');
+    label.textContent = `${MESES[viewDate.getMonth()]} ${viewDate.getFullYear()}`;
+
+    grid.innerHTML = DOW.map(d => `<div class="cal-dow">${d}</div>`).join('');
+
+    const year = viewDate.getFullYear();
+    const month = viewDate.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const startOffset = (firstDay.getDay() + 6) % 7; // lunes = 0
+    const daysInMonth = new Date(year, month+1, 0).getDate();
+
+    for (let i = 0; i < startOffset; i++){
+      grid.insertAdjacentHTML('beforeend', `<div class="cal-day empty"></div>`);
+    }
+
+    const todayStr = todayISO();
+
+    for (let day = 1; day <= daysInMonth; day++){
+      const d = new Date(year, month, day);
+      const iso = `${year}-${pad(month+1)}-${pad(day)}`;
+      const count = await getCount(iso);
+      const color = colorForCount(count);
+      const cell = document.createElement('div');
+      cell.className = 'cal-day';
+      if (iso === todayStr) cell.classList.add('today');
+      if (iso === selectedISO) cell.classList.add('selected');
+      cell.style.background = color || 'rgba(255,255,255,0.03)';
+      cell.innerHTML = `<span class="n">${day}</span>${count > 0 ? `<span class="c">${count}</span>` : ''}`;
+      cell.addEventListener('click', () => {
+        selectedISO = iso;
+        document.getElementById('input-date').value = iso;
+        renderCalendar();
+        renderDayPanel();
+      });
+      grid.appendChild(cell);
+    }
+  }
+
+  async function renderWeekHero(){
+    const base = isoToDate(selectedISO);
+    const dow = (base.getDay() + 6) % 7; // lunes=0
+    const monday = new Date(base);
+    monday.setDate(base.getDate() - dow);
+
+    let total = 0;
+    for (let i = 0; i < 7; i++){
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      const iso = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+      total += await getCount(iso);
+    }
+
+    document.getElementById('hero-num').innerHTML = `${total}<small> / ${WEEKLY_GOAL}</small>`;
+    document.getElementById('hero-marking').textContent = markForCount(Math.round((total/WEEKLY_GOAL)*DAILY_TARGET));
+    const pct = Math.min((total / WEEKLY_GOAL) * 100, 100);
+    document.getElementById('bar-fill').style.width = `${pct}%`;
+  }
+
+  async function renderDayPanel(){
+    const activities = await getActivities(selectedISO);
+    document.getElementById('day-count').textContent = activities.length;
+
+    const list = document.getElementById('activity-list');
+    const emptyNote = document.getElementById('empty-note');
+
+    if (activities.length === 0){
+      list.innerHTML = '';
+      emptyNote.style.display = 'block';
+    } else {
+      emptyNote.style.display = 'none';
+      list.innerHTML = activities.map((a, i) =>
+        `<div class="activity-item"><span>${a}</span><span class="del" data-idx="${i}">×</span></div>`
+      ).join('');
+      list.querySelectorAll('.del').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const idx = Number(btn.dataset.idx);
+          const current = await getActivities(selectedISO);
+          current.splice(idx, 1);
+          await saveActivities(selectedISO, current);
+          await renderDayPanel();
+          await renderCalendar();
+          await renderWeekHero();
+        });
+      });
+    }
+  }
+
+  async function addActivities(){
+    const textarea = document.getElementById('input-activities');
+    const lines = textarea.value.split('\n').map(l => l.trim()).filter(Boolean);
+    if (lines.length === 0) return;
+
+    const status = document.getElementById('status-line');
+    status.textContent = 'Guardando…';
+
+    try{
+      const current = await getActivities(selectedISO);
+      const updated = current.concat(lines);
+      await saveActivities(selectedISO, updated);
+      textarea.value = '';
+      status.textContent = '';
+      await renderDayPanel();
+      await renderCalendar();
+      await renderWeekHero();
+    } catch(e){
+      status.textContent = 'Hubo un problema al guardar. Intenta de nuevo.';
+    }
+  }
+
+  document.getElementById('btn-add').addEventListener('click', addActivities);
+  document.getElementById('btn-prev').addEventListener('click', () => {
+    viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth()-1, 1);
+    renderCalendar();
+  });
+  document.getElementById('btn-next').addEventListener('click', () => {
+    viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth()+1, 1);
+    renderCalendar();
+  });
+  document.getElementById('input-date').addEventListener('change', (e) => {
+    selectedISO = e.target.value;
+    const d = isoToDate(selectedISO);
+    viewDate = new Date(d.getFullYear(), d.getMonth(), 1);
+    renderCalendar();
+    renderDayPanel();
+    renderWeekHero();
+  });
+
+  (async function init(){
+    document.getElementById('input-date').value = selectedISO;
+    renderLegend();
+    await renderCalendar();
+    await renderDayPanel();
+    await renderWeekHero();
+  })();
+</script>
+</body>
+</html>
