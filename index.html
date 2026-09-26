@@ -190,28 +190,12 @@
   }
 
   /* ---- registro del día ---- */
-  textarea{
-    width: 100%;
-    min-height: 100px;
-    background: transparent;
-    border: 1px solid var(--hairline);
-    border-radius: 6px;
-    color: var(--ivory);
-    font-family: 'Work Sans', sans-serif;
-    font-size: 14px;
-    padding: 12px 14px;
-    resize: vertical;
-    line-height: 1.6;
-  }
-  textarea::placeholder{ color: var(--ivory-dim); opacity: 0.6; }
-  textarea:focus{ outline: none; border-color: var(--brass); }
-
   .row{
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    margin-top: 12px;
+    margin-top: 16px;
     flex-wrap: wrap;
   }
 
@@ -233,21 +217,6 @@
     color-scheme: dark;
   }
 
-  .btn{
-    background: transparent;
-    border: 1px solid var(--brass);
-    color: var(--brass);
-    font-family: 'Work Sans', sans-serif;
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.08em;
-    padding: 10px 20px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s;
-  }
-  .btn:hover{ background: var(--brass); color: var(--nearblack); }
-
   .day-total{
     font-family: 'Cormorant Garamond', serif;
     font-style: italic;
@@ -256,47 +225,71 @@
   }
   .day-total b{ color: var(--brass); font-style: normal; }
 
-  .activity-list{
-    margin-top: 18px;
+  .objetivos-list{
+    margin-top: 6px;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 10px;
   }
-  .activity-item{
+  .objetivo-item{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px 16px;
+    border: 1px solid var(--hairline);
+    border-radius: 6px;
+    transition: border-color 0.15s ease, background 0.15s ease;
+  }
+  .objetivo-item.done{
+    border-color: var(--brass);
+    background: rgba(168,119,46,0.08);
+  }
+  .objetivo-toggle{
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 10px;
+    gap: 12px;
+    cursor: pointer;
+  }
+  .objetivo-item .area{
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 17px;
+    color: var(--ivory);
+  }
+  .objetivo-item.done .area{ color: var(--brass); }
+  .objetivo-item .check{
+    width: 22px; height: 22px;
+    border-radius: 5px;
+    border: 1.5px solid var(--hairline);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: transparent;
     font-size: 13px;
-    padding: 8px 10px;
+    transition: all 0.15s ease;
+  }
+  .objetivo-item.done .check{
+    background: var(--brass);
+    border-color: var(--brass);
+    color: var(--nearblack);
+  }
+  .objetivo-desc{
+    width: 100%;
+    min-height: 56px;
+    background: transparent;
     border: 1px solid var(--hairline);
     border-radius: 5px;
-    color: var(--ivory-dim);
-  }
-  .activity-item .del{
-    cursor: pointer;
-    color: var(--ivory-dim);
-    opacity: 0.5;
-    font-size: 15px;
-    line-height: 1;
-    transition: opacity 0.15s, color 0.15s;
-  }
-  .activity-item .del:hover{ opacity: 1; color: var(--wine); }
-
-  .empty-note{
+    color: var(--ivory);
+    font-family: 'Work Sans', sans-serif;
     font-size: 13px;
-    color: var(--ivory-dim);
-    opacity: 0.6;
-    font-style: italic;
-    margin-top: 14px;
+    padding: 8px 10px;
+    resize: vertical;
+    line-height: 1.5;
   }
-
-  .status-line{
-    font-size: 12px;
-    color: var(--ivory-dim);
-    opacity: 0.7;
-    margin-top: 10px;
-  }
+  .objetivo-desc::placeholder{ color: var(--ivory-dim); opacity: 0.6; }
+  .objetivo-desc:focus{ outline: none; border-color: var(--brass); }
 
   @media (max-width: 520px){
     .cal-day .c{ display: none; }
@@ -309,11 +302,11 @@
 
   <header>
     <h1>Bitácora de <em>práctica</em></h1>
-    <p class="subt">Meta: 10 actividades al día · 50 a la semana</p>
+    <p class="subt">Meta: 1 objetivo cumplido por área al día · 20 objetivos a la semana</p>
   </header>
 
   <div class="hero">
-    <div class="num" id="hero-num">0<small> / 50</small></div>
+    <div class="num" id="hero-num">0<small> / 20</small></div>
     <div class="marking" id="hero-marking">—</div>
   </div>
   <div class="bar-track"><div class="bar-fill" id="bar-fill" style="width:0%"></div></div>
@@ -335,30 +328,31 @@
 
   <div class="panel">
     <div class="panel-head">
-      <span class="panel-title">Registrar actividades</span>
+      <span class="panel-title">Objetivos del día</span>
       <div class="day-picker">
         <span>Día:</span>
         <input type="date" id="input-date">
       </div>
     </div>
 
-    <textarea id="input-activities" placeholder="Una actividad por línea, por ejemplo:&#10;Dar clase a Cecilia&#10;Publicar en Instagram&#10;Actualizar landing page"></textarea>
+    <div class="objetivos-list" id="objetivos-list"></div>
 
     <div class="row">
-      <button class="btn" id="btn-add">Agregar al día</button>
-      <div class="day-total">Ese día llevas: <b id="day-count">0</b> / 10</div>
+      <div class="day-total">Ese día llevas: <b id="day-count">0</b> / 4</div>
     </div>
-
-    <div class="activity-list" id="activity-list"></div>
-    <div class="empty-note" id="empty-note" style="display:none;">Aún no hay actividades registradas este día.</div>
-    <div class="status-line" id="status-line"></div>
   </div>
 
 </div>
 
 <script>
-  const DAILY_TARGET = 10;
-  const WEEKLY_GOAL = 50;
+  const AREAS = [
+    { key: 'arquitectura', label: 'Arquitectura' },
+    { key: 'academia', label: 'Academia de piano · promoción y seguimiento' },
+    { key: 'piano', label: 'Piano · estudio' },
+    { key: 'finanzas', label: 'Finanzas' }
+  ];
+  const DAILY_MAX = AREAS.length;
+  const WEEKLY_GOAL = 20;
   const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
   const DOW = ['L','M','M','J','V','S','D'];
 
@@ -372,7 +366,6 @@
   ];
 
   function pad(n){ return String(n).padStart(2,'0'); }
-  function dateKey(d){ return `actividades:${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
   function todayISO(){
     const d = new Date();
     return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
@@ -384,7 +377,7 @@
 
   function colorForCount(count){
     if (count <= 0) return null;
-    const pct = Math.min(count / DAILY_TARGET, 1);
+    const pct = Math.min(count / DAILY_MAX, 1);
     let lower = DYNAMICS[0], upper = DYNAMICS[DYNAMICS.length-1];
     for (let i = 0; i < DYNAMICS.length - 1; i++){
       if (pct >= DYNAMICS[i].min && pct <= DYNAMICS[i+1].min){
@@ -400,7 +393,7 @@
 
   function markForCount(count){
     if (count <= 0) return '—';
-    const pct = Math.min(count / DAILY_TARGET, 1);
+    const pct = Math.min(count / DAILY_MAX, 1);
     let mark = DYNAMICS[0].mark;
     for (const d of DYNAMICS){ if (pct >= d.min) mark = d.mark; }
     return mark;
@@ -410,29 +403,30 @@
   let selectedISO = todayISO();
   const countsCache = {};
 
-  async function getCount(iso){
+  function getDay(iso){
+    try{
+      const raw = localStorage.getItem(`objetivos:${iso}`);
+      return raw ? JSON.parse(raw) : {};
+    } catch(e){ return {}; }
+  }
+
+  function saveDay(iso, obj){
+    localStorage.setItem(`objetivos:${iso}`, JSON.stringify(obj));
+    countsCache[iso] = AREAS.filter(a => obj[a.key] && obj[a.key].done).length;
+  }
+
+  function getCount(iso){
     if (countsCache[iso] !== undefined) return countsCache[iso];
-    try{
-      const raw = localStorage.getItem(`actividades:${iso}`);
-      const arr = raw ? JSON.parse(raw) : [];
-      countsCache[iso] = arr.length;
-      return arr.length;
-    } catch(e){
-      countsCache[iso] = 0;
-      return 0;
-    }
+    const obj = getDay(iso);
+    const count = AREAS.filter(a => obj[a.key] && obj[a.key].done).length;
+    countsCache[iso] = count;
+    return count;
   }
 
-  async function getActivities(iso){
-    try{
-      const raw = localStorage.getItem(`actividades:${iso}`);
-      return raw ? JSON.parse(raw) : [];
-    } catch(e){ return []; }
-  }
-
-  async function saveActivities(iso, arr){
-    localStorage.setItem(`actividades:${iso}`, JSON.stringify(arr));
-    countsCache[iso] = arr.length;
+  function escapeHtml(str){
+    return String(str || '').replace(/[&<>"']/g, c => ({
+      '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+    }[c]));
   }
 
   function renderLegend(){
@@ -477,7 +471,7 @@
         selectedISO = iso;
         document.getElementById('input-date').value = iso;
         renderCalendar();
-        renderDayPanel();
+        renderObjetivos();
       });
       grid.appendChild(cell);
     }
@@ -498,63 +492,55 @@
     }
 
     document.getElementById('hero-num').innerHTML = `${total}<small> / ${WEEKLY_GOAL}</small>`;
-    document.getElementById('hero-marking').textContent = markForCount(Math.round((total/WEEKLY_GOAL)*DAILY_TARGET));
+    document.getElementById('hero-marking').textContent = markForCount(Math.round((total/WEEKLY_GOAL)*DAILY_MAX));
     const pct = Math.min((total / WEEKLY_GOAL) * 100, 100);
     document.getElementById('bar-fill').style.width = `${pct}%`;
   }
 
-  async function renderDayPanel(){
-    const activities = await getActivities(selectedISO);
-    document.getElementById('day-count').textContent = activities.length;
+  function renderObjetivos(){
+    const dayObj = getDay(selectedISO);
 
-    const list = document.getElementById('activity-list');
-    const emptyNote = document.getElementById('empty-note');
+    const list = document.getElementById('objetivos-list');
+    list.innerHTML = AREAS.map(a => {
+      const entry = dayObj[a.key] || {};
+      const done = !!entry.done;
+      const desc = entry.desc || '';
+      return `<div class="objetivo-item${done ? ' done' : ''}" data-key="${a.key}">
+        <div class="objetivo-toggle" data-role="toggle">
+          <span class="area">${a.label}</span>
+          <span class="check">${done ? '✓' : ''}</span>
+        </div>
+        <textarea class="objetivo-desc" data-role="desc" rows="2" placeholder="¿Qué hiciste? (opcional)">${escapeHtml(desc)}</textarea>
+      </div>`;
+    }).join('');
 
-    if (activities.length === 0){
-      list.innerHTML = '';
-      emptyNote.style.display = 'block';
-    } else {
-      emptyNote.style.display = 'none';
-      list.innerHTML = activities.map((a, i) =>
-        `<div class="activity-item"><span>${a}</span><span class="del" data-idx="${i}">×</span></div>`
-      ).join('');
-      list.querySelectorAll('.del').forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const idx = Number(btn.dataset.idx);
-          const current = await getActivities(selectedISO);
-          current.splice(idx, 1);
-          await saveActivities(selectedISO, current);
-          await renderDayPanel();
-          await renderCalendar();
-          await renderWeekHero();
-        });
+    list.querySelectorAll('.objetivo-item').forEach(el => {
+      const key = el.dataset.key;
+
+      el.querySelector('[data-role="toggle"]').addEventListener('click', () => {
+        const obj = getDay(selectedISO);
+        const entry = obj[key] || {};
+        entry.done = !entry.done;
+        obj[key] = entry;
+        saveDay(selectedISO, obj);
+        renderObjetivos();
+        renderCalendar();
+        renderWeekHero();
       });
-    }
+
+      el.querySelector('[data-role="desc"]').addEventListener('change', (e) => {
+        const obj = getDay(selectedISO);
+        const entry = obj[key] || {};
+        entry.desc = e.target.value;
+        obj[key] = entry;
+        saveDay(selectedISO, obj);
+      });
+    });
+
+    document.getElementById('day-count').textContent =
+      AREAS.filter(a => dayObj[a.key] && dayObj[a.key].done).length;
   }
 
-  async function addActivities(){
-    const textarea = document.getElementById('input-activities');
-    const lines = textarea.value.split('\n').map(l => l.trim()).filter(Boolean);
-    if (lines.length === 0) return;
-
-    const status = document.getElementById('status-line');
-    status.textContent = 'Guardando…';
-
-    try{
-      const current = await getActivities(selectedISO);
-      const updated = current.concat(lines);
-      await saveActivities(selectedISO, updated);
-      textarea.value = '';
-      status.textContent = '';
-      await renderDayPanel();
-      await renderCalendar();
-      await renderWeekHero();
-    } catch(e){
-      status.textContent = 'Hubo un problema al guardar. Intenta de nuevo.';
-    }
-  }
-
-  document.getElementById('btn-add').addEventListener('click', addActivities);
   document.getElementById('btn-prev').addEventListener('click', () => {
     viewDate = new Date(viewDate.getFullYear(), viewDate.getMonth()-1, 1);
     renderCalendar();
@@ -568,7 +554,7 @@
     const d = isoToDate(selectedISO);
     viewDate = new Date(d.getFullYear(), d.getMonth(), 1);
     renderCalendar();
-    renderDayPanel();
+    renderObjetivos();
     renderWeekHero();
   });
 
@@ -576,7 +562,7 @@
     document.getElementById('input-date').value = selectedISO;
     renderLegend();
     await renderCalendar();
-    await renderDayPanel();
+    renderObjetivos();
     await renderWeekHero();
   })();
 </script>
